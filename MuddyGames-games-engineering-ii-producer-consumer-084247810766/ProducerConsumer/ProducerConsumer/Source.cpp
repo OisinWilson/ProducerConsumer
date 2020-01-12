@@ -17,29 +17,36 @@ bool finished = false;
 
 
 void producer(int n) {
+
 	for (int i = 0; i < n; ++i) {
 		{
 			//std::lock_guard<std::mutex> lk(mx);
 			q.push(i);
-			std::cout << "pushing " << i << std::endl;
+			std::cout << "Making burger " << i << std::endl;
 		}
 		cv.notify_all();
 	}
 	{
 		std::lock_guard<std::mutex> lk(mx);
+		
 		finished = true;
 	}
 	cv.notify_all();
 }
 
 void consumer() {
+
 	while (true) {
+		
 		std::unique_lock<std::mutex> lk(mx);
+		
 		cv.wait(lk, [] { return finished || !q.empty(); });
+
 		while (!q.empty()) {
-			std::cout << "consuming " << q.front() << std::endl;
+			std::cout << "Eating burger " << q.front() << std::endl;
 			q.pop();
 		}
+		
 		if (finished) break;
 	}
 }
